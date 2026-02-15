@@ -25,23 +25,24 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig{
 
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
+    private final UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
-    private static UserRepository userRepository;
-
-    private static final UserDetailsServiceImpl userDetailsService = new UserDetailsServiceImpl(userRepository);
+    public SecurityConfig(JwtFilter jwtFilter,
+                          UserDetailsServiceImpl userDetailsService) {
+        this.jwtFilter = jwtFilter;
+        this.userDetailsService = userDetailsService;
+    }
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                        .requestMatchers("/public/**").permitAll()
-                        .requestMatchers("/hardware/**").permitAll()
+                        .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/hardware/**").permitAll()
                         .requestMatchers("/api/sms/**").permitAll()
                         .requestMatchers("/alerts/**").permitAll()
-                        .requestMatchers("/user/**").hasRole("USER")
+                        .requestMatchers("/public/**").permitAll()
                         .anyRequest()
                         .authenticated()
                 )

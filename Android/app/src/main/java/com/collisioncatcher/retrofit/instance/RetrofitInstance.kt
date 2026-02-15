@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 class RetrofitService {
     private val retrofit = Retrofit.Builder()
-        .baseUrl("https://74a0-2409-4089-acb9-a4e7-a144-9649-9251-233a.ngrok-free.app")
+        .baseUrl("http://192.168.52.47:8080")
         .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
 
     fun getPlaneRetrofit(): Retrofit

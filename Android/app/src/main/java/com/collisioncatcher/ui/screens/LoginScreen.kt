@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.collisioncatcher.retrofit.entity.User
 import com.collisioncatcher.viewmodel.UserViewModel
+import java.util.ArrayList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,8 +164,9 @@ fun LoginScreen(
                                 email.toString(),
                                 null,
                                 null,
-                                memberSince = null,
-                                null
+                                null,
+                                null,
+                                ArrayList<String>()
                             )
                             viewModel.login(userLogin,context)
                         }, modifier = Modifier.fillMaxWidth(),

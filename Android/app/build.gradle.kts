@@ -73,4 +73,5 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.bson)
     implementation(libs.bson.kotlinx)
+    implementation(libs.converter.scalars)
 }

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,8 +52,13 @@ public class PublicController {
         {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUserName(),user.getPassword()));
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUserName());
-            String jwtToken = jwtUtils.generateToken(userDetails.getUsername());
-            return new ResponseEntity<>(jwtToken,HttpStatus.OK);
+            if(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER"))) {
+                String jwtToken = jwtUtils.generateToken(userDetails.getUsername());
+                return new ResponseEntity<>(jwtToken, HttpStatus.OK);
+            }
+            else {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
         }
         catch (AuthenticationException e) {
             log.error("Error while generating token",e);
@@ -66,8 +72,7 @@ public class PublicController {
         try{
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUserName(),user.getPassword()));
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUserName());
-            ArrayList<String> role = userService.findByName(userDetails.getUsername()).getRole();
-            if(role.contains("ROLE_ADMIN"))
+            if(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
             {
                 String jwtToken = jwtUtils.generateToken(userDetails.getUsername());
                 return new ResponseEntity<>(jwtToken,HttpStatus.OK);

@@ -12,7 +12,7 @@ public class ControlPublisher {
     @Autowired
     private MessageChannel mqttOutboundChannel;
 
-    public void sendControl(String hardwareId, boolean stream, int interval){
+    public boolean sendControl(String hardwareId, boolean stream, int interval){
         String topic = "vehicle/"+hardwareId+"/control";
 
         String payload = String.format(
@@ -20,7 +20,7 @@ public class ControlPublisher {
                 stream,interval
         );
 
-        mqttOutboundChannel.send(
+        return mqttOutboundChannel.send(
                 MessageBuilder.withPayload(payload)
                         .setHeader("mqtt_topic",topic)
                         .build()

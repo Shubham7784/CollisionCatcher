@@ -3,6 +3,7 @@ accompanistPermissions = "0.37.3"
 agp = "8.12.3"
 bsonKotlinx = "5.6.1"
 converterGson = "3.0.0"
+converterScalars = "3.0.0"
 gson = "2.13.2"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
@@ -28,6 +29,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 bson = { module = "org.mongodb:bson" }
 bson-kotlinx = { module = "org.mongodb:bson-kotlinx", version.ref = "bsonKotlinx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

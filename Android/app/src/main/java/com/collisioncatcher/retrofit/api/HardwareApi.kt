@@ -1,5 +1,6 @@
 package com.collisioncatcher.retrofit.api
 
+import com.collisioncatcher.retrofit.entity.ApiResponse
 import com.collisioncatcher.retrofit.entity.Hardware
 import com.collisioncatcher.retrofit.entity.MapData
 import com.collisioncatcher.retrofit.entity.Speed
@@ -14,26 +15,26 @@ import retrofit2.http.Path
 interface HardwareApi {
 
     @POST("/hardware")
-    fun addHardware(@Body hardware: Hardware,): Response<Hardware>
+    suspend fun addHardware(@Body hardware: Hardware,): Response<Hardware>
 
     @PUT("/hardware")
-    fun updateHardware(@Body hardware: Hardware):Response<Hardware>
+    suspend fun updateHardware(@Body hardware: Hardware):Response<Hardware>
 
     @GET("/hardware/disable-motor")
-    fun disableMotor():Response<String>
+    suspend fun disableMotor():Response<String>
 
     @GET("/hardware/enable-motor")
-    fun enableMotor():Response<String>
+    suspend fun enableMotor():Response<String>
 
     @GET("/hardware/get-gps-data")
-    fun getGpsData():Response<MapData>
+    suspend fun getGpsData():Response<MapData>
 
-    @POST("/hardware/{hardwareId}/stream/start")
-    fun startSpeedStream(@Path("hardwareId") hardwareId: String): Response<String>
+    @GET("/hardware/{hardwareId}/stream/start")
+    suspend fun startSpeedStream(@Path("hardwareId") hardwareId: String): Response<ApiResponse<String>>
 
-    @POST("/hardware/{hardwareId}/stream/stop")
-    fun stopSpeedStream(@Path("hardwareId") hardwareId: String): Response<String>
+    @GET("/hardware/{hardwareId}/stream/stop")
+    suspend fun stopSpeedStream(@Path("hardwareId") hardwareId: String): Response<ApiResponse<String>>
 
     @GET("/hardware/{hardwareId}/latest")
-    fun getLatestSpeed(@Path("hardwareId") hardwareId: String): Response<List<Speed>>
+    suspend fun getLatestSpeed(@Path("hardwareId") hardwareId: String): Response<Speed>
 }

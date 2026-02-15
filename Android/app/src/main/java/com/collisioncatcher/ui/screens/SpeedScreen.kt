@@ -1,6 +1,7 @@
 package com.collisioncatcher.ui.screens
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,14 +23,13 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,31 +39,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.collisioncatcher.retrofit.entity.Hardware
 import com.collisioncatcher.retrofit.entity.User
-import com.collisioncatcher.ui.screens.SpeedHistoryItem
 import com.collisioncatcher.viewmodel.HardwareViewModel
 import com.collisioncatcher.viewmodel.UserViewModel
-import kotlinx.coroutines.delay
-import kotlin.random.Random
 
 @Composable
 fun SpeedScreen(context: Context,hardwareViewModel: HardwareViewModel = viewModel(),userViewModel: UserViewModel = viewModel()) {
     var currentSpeed by remember { mutableStateOf(0f) }
-    var maxSpeed by remember { mutableStateOf(0) }
-    var avgSpeed by remember { mutableStateOf(0) }
-    var speedLimit by remember { mutableStateOf(60) }
+    var maxSpeed by hardwareViewModel.maxSpeed
+    var avgSpeed by hardwareViewModel.avgSpeed
+    var speedLimit by remember { mutableStateOf(16.64) }
     var isSpeeding by remember { mutableStateOf(false) }
-    val isSpeedStart = remember { mutableStateOf(false) }
+    val isSpeedStart by hardwareViewModel.isSpeedFetching
     val user = remember { mutableStateOf<User?>(null) }
-    val speedList = hardwareViewModel.speedList
+    val speed by hardwareViewModel.speed.collectAsState()
     // Simulate real-time speed updates
 
     LaunchedEffect(Unit) {
-        user.value = userViewModel.getUserDetails(context)
+        userViewModel.getUserDetails(context).let {
+            user.value = it
+        }
+        //hardwareViewModel.fetchSpeed(user.value?.hardware?.hardwareId!!)
     }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -115,22 +116,20 @@ fun SpeedScreen(context: Context,hardwareViewModel: HardwareViewModel = viewMode
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        speedList.forEach{ speed ->
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                val speed = speed.speed.ifEmpty { "0" }
                                 Text(
-                                    text = speed,
+                                    text = speed.toString().substring(0,3),
                                     style = MaterialTheme.typography.displayLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isSpeeding) Color(0xFFD32F2F) else Color(0xFF4CAF50)
                                 )
+                                Log.d("Speed UI",speed.toString())
                                 Text(
-                                    text = "km/h",
+                                    text = "m/s",
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                        }
                     }
 
                     Spacer(Modifier.height(16.dp))
@@ -173,13 +172,13 @@ fun SpeedScreen(context: Context,hardwareViewModel: HardwareViewModel = viewMode
             ) {
                 SpeedStatCard(
                     title = "Max Speed",
-                    value = "$maxSpeed km/h",
+                    value = "${maxSpeed.toString().substring(0,3)} m/s",
                     color = Color(0xFFDC2626),
                     modifier = Modifier.weight(1f)
                 )
                 SpeedStatCard(
                     title = "Avg Speed",
-                    value = "$avgSpeed km/h",
+                    value = "${avgSpeed.toString().substring(0,3)} m/s",
                     color = Color(0xFF1E3A8A),
                     modifier = Modifier.weight(1f)
                 )
@@ -193,13 +192,13 @@ fun SpeedScreen(context: Context,hardwareViewModel: HardwareViewModel = viewMode
             ) {
                 SpeedStatCard(
                     title = "Speed Limit",
-                    value = "$speedLimit km/h",
+                    value = "$speedLimit m/s",
                     color = Color(0xFF059669),
                     modifier = Modifier.weight(1f)
                 )
                 SpeedStatCard(
                     title = "Over Limit",
-                    value = if (isSpeeding) "${currentSpeed - speedLimit} km/h" else "0 km/h",
+                    value = if (isSpeeding) "${currentSpeed - speedLimit} m/s" else "0 m/s",
                     color = if (isSpeeding) Color(0xFFD32F2F) else Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f)
                 )
@@ -247,14 +246,12 @@ fun SpeedScreen(context: Context,hardwareViewModel: HardwareViewModel = viewMode
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
-                if(!isSpeedStart.value){
+                if(!isSpeedStart){
                     Button(
                         onClick = {
-                            user.value?.hardware?.serialNo.let { u ->
+                            user.value?.hardware?.hardwareId.let { u ->
                                 hardwareViewModel.startSpeedFetching(u!!)
-                                hardwareViewModel.fetchSpeed(u)
                             }
-                            isSpeedStart.value = true
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonColors(Color.Blue, Color.White, Color.Blue, Color.White)
@@ -265,8 +262,7 @@ fun SpeedScreen(context: Context,hardwareViewModel: HardwareViewModel = viewMode
                 else{
                     Button(
                         onClick = {
-                            hardwareViewModel.stopSpeedFetching(user.value?.hardware?.serialNo!!)
-                            isSpeedStart.value = false
+                            hardwareViewModel.stopSpeedFetching(user.value?.hardware?.hardwareId!!)
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonColors(Color.Red, Color.White, Color.Red, Color.White)

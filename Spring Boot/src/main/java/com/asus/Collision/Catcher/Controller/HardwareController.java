@@ -1,10 +1,7 @@
 package com.asus.Collision.Catcher.Controller;
 
-import com.asus.Collision.Catcher.Entity.Alert;
-import com.asus.Collision.Catcher.Entity.Hardware;
-import com.asus.Collision.Catcher.Entity.MapData;
+import com.asus.Collision.Catcher.Entity.*;
 
-import com.asus.Collision.Catcher.Entity.User;
 import com.asus.Collision.Catcher.Repository.SpeedRepository;
 import com.asus.Collision.Catcher.Service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,7 +15,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/hardware")
@@ -129,24 +125,26 @@ public class HardwareController {
         }
     }
 
-    @PostMapping("/{id}/stream/start")
+    @GetMapping("/{id}/stream/start")
     public ResponseEntity<?> startStream(@PathVariable String id){
-        publisher.sendControl(id,true,100);
-        return new ResponseEntity<>("Streaming Started",HttpStatus.OK);
+        boolean b = publisher.sendControl(id, true, 100);
+        if(b)
+            return ResponseEntity.ok(new ApiResponse<>(true,"Streaming Started",null));
+        return ResponseEntity.badRequest().build();
     }
 
-    @PostMapping("/{id}/stream/stop")
+    @GetMapping("/{id}/stream/stop")
     public ResponseEntity<?> stopStream(@PathVariable String id){
-        publisher.sendControl(id,false,0);
-        repo.deleteAll();
-        return new ResponseEntity<>("Streaming Stopped",HttpStatus.OK);
+        boolean b = publisher.sendControl(id, false, 100);
+        if(b){
+            repo.deleteAll();
+            return ResponseEntity.ok(new ApiResponse<>(true,"Streaming Stopped",null));
+        }
+        return ResponseEntity.badRequest().build();
     }
 
     @GetMapping("/{id}/latest")
-    public ResponseEntity<?> latestSpeed(@PathVariable String id){
-        return new ResponseEntity<>(repo.findTop10ByHardwareIdOrderByTimestampDesc(id),HttpStatus.OK);
+    public ResponseEntity<Speed> latestSpeed(@PathVariable String id){
+        return new ResponseEntity<>(repo.findTopByHardwareIdOrderByTimestampDesc(id),HttpStatus.OK);
     }
-
-
-
 }

@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +51,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.collisioncatcher.viewmodel.HardwareViewModel
 import com.collisioncatcher.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 import kotlin.random.Random
@@ -105,8 +108,8 @@ fun HomeScaffold(onLogout: () -> Unit, onOpenContacts: () -> Unit, onOpenTips: (
 }
 
 @Composable
-fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit) {
-    var currentSpeed by remember { mutableIntStateOf(0) }
+fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit,hardwareViewModel: HardwareViewModel = viewModel()) {
+    val currentSpeed by hardwareViewModel.speed.collectAsState()
     var isMonitoring by remember { mutableStateOf(true) }
     var collisionRisk by remember { mutableStateOf("LOW") }
     var lastUpdate by remember { mutableStateOf("2 min ago") }
@@ -114,11 +117,10 @@ fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit) {
     // Simulate real-time data updates
     LaunchedEffect(Unit) {
         while (true) {
-            delay(2000)
-            currentSpeed = Random.nextInt(0, 120)
+            delay(1000)
             collisionRisk = when {
-                currentSpeed > 100 -> "HIGH"
-                currentSpeed > 80 -> "MEDIUM"
+                currentSpeed > 27.7 -> "HIGH"
+                currentSpeed > 22.2 -> "MEDIUM"
                 else -> "LOW"
             }
             lastUpdate = "Just now"
@@ -205,7 +207,7 @@ fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ModernMetricCard(
                     title = "Current Speed",
-                    value = "$currentSpeed km/h",
+                    value = "${currentSpeed.toString().substring(0,3)} km/h",
                     icon = Icons.Default.Speed,
                     color = Color(0xFF1E3A8A),
                     modifier = Modifier.weight(1f)

@@ -29,7 +29,7 @@ public class AdminController {
 
     @GetMapping("/getUsers")
     public ResponseEntity<?> getAllUsers() {
-        List<User> allUsers = userService.getAllUsers().stream().filter(x -> x.getRole().equals("user")).toList();
+        List<User> allUsers = userService.getAllUsers().stream().filter(x -> x.getRole().getFirst().equals("ROLE_USER")).toList();
         if (!allUsers.isEmpty()) {
             return new ResponseEntity<>(allUsers, HttpStatus.OK);
         }

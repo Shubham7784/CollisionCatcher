@@ -33,7 +33,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.collisioncatcher.retrofit.entity.Hardware
 import com.collisioncatcher.retrofit.entity.User
 import com.collisioncatcher.viewmodel.UserViewModel
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,17 +131,18 @@ fun RegisterScreen(
                     Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
-                val hardware = Hardware(serialNo = hardwareNo, userName = email)
+                val hardware = Hardware(hardwareId = hardwareNo, userName = email)
                 val user = User(
                     userId = null,
                     name = name,
                     password = password,
+                    age = age,
                     userName = email,
                     phoneNo = phone,
-                    age = age,
                     hardware = hardware,
-                    memberSince = LocalDateTime.now().toString(),
-                    membersList = null
+                    memberSince = null,
+                    membersList = null,
+                    role = null
                 )
                 viewModel.signup(user) } ,
                 modifier = Modifier.fillMaxWidth()
