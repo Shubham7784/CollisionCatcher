@@ -14,6 +14,8 @@ import androidx.core.content.edit
 import com.collisioncatcher.retrofit.api.SignUpApi
 import com.collisioncatcher.retrofit.entity.Alert
 import com.collisioncatcher.retrofit.entity.Member
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class UserViewModel : ViewModel() {
     val isLoading = mutableStateOf(false)
@@ -30,7 +32,7 @@ class UserViewModel : ViewModel() {
                 if (response.isSuccessful && response.code() == 200) {
                     isSuccess.value = true
                     message.value = "Login Successful"
-                    val token = response.body() ?: ""
+                    val token = response.body()?.message ?: ""
                     saveToken(context, token)
                 } else {
                     message.value = "Invalid Credentials"
@@ -59,7 +61,6 @@ class UserViewModel : ViewModel() {
                 if (response.isSuccessful && response.code() == 200) {
                     isSuccess.value = true
                     message.value = "Login Successful"
-
                 } else {
                     message.value = "Invalid Credentials"
                     isFailure.value = true

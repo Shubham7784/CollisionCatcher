@@ -7,6 +7,7 @@ import com.asus.Collision.Catcher.Service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/hardware")
+@Slf4j
 public class HardwareController {
 
     @Autowired
@@ -37,10 +40,20 @@ public class HardwareController {
     @Autowired
     private SpeedRepository repo;
 
-    private final String hardwareIp = "10.242.239.104";
-
     private RestTemplate restTemplate = new RestTemplate();
 
+    @PostMapping
+    public ResponseEntity<?> addHardware(@RequestBody Hardware newHardware){
+        Optional<Hardware> hardwareById = hardwareService.getHardwareById(newHardware.getHardwareId());
+        if(hardwareById.isPresent())
+        {
+            Hardware hardwareDb = hardwareById.get();
+            hardwareDb.setHardwareIp(newHardware.getHardwareIp());
+            hardwareService.saveHardware(hardwareDb);
+        }
+        hardwareService.saveHardware(newHardware);
+        return ResponseEntity.ok(new ApiResponse<String>(true,"Hardware Added Successfully!!",null));
+    }
     @PostMapping("/alert")
     public ResponseEntity<?> alertGenerated(@RequestBody Alert body) {
         String hardwareId = body.getHardwareId();
@@ -66,36 +79,41 @@ public class HardwareController {
         return "Hello Hardware";
     }
 
-    @GetMapping("/disable-motor")
-    public ResponseEntity<?> disableMotor()
-    {
-        String url = hardwareIp + "/disable-motor";
-        try
-        {
-            String response = restTemplate.getForObject(url,String.class);
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        } catch (RestClientException e) {
-            return new ResponseEntity<>("Error Connecting to ESP32"+e.getMessage(),HttpStatus.BAD_REQUEST);
+    @GetMapping("/{hardwareId}/disable-motor")
+    public ResponseEntity<?> disableMotor(@PathVariable String hardwareId) {
+        Optional<Hardware> hardwareById = hardwareService.getHardwareById(hardwareId);
+        if (hardwareById.isPresent()) {
+            String url = "http://"+hardwareById.get().getHardwareIp() + "/disable-motor";
+            try {
+                String response = restTemplate.getForObject(url, String.class);
+                return ResponseEntity.ok(new ApiResponse<String>(true, response, null));
+            } catch (RestClientException e) {
+                return ResponseEntity.badRequest().build();
+            }
         }
+        return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/enable-motor")
-    public ResponseEntity<?> enableMotor()
+    @GetMapping("/{hardwareId}/enable-motor")
+    public ResponseEntity<?> enableMotor(@PathVariable String hardwareId)
     {
-        String url = hardwareIp + "/enable-motor";
-        try
-        {
-            String response = restTemplate.getForObject(url,String.class);
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        } catch (RestClientException e) {
-            return new ResponseEntity<>("Error Connecting to ESP32"+e.getMessage(),HttpStatus.BAD_REQUEST);
+        Optional<Hardware> hardwareById = hardwareService.getHardwareById(hardwareId);
+        if(hardwareById.isPresent()){
+            String url = "http://"+hardwareById.get().getHardwareIp()+ "/enable-motor";
+            try {
+                String response = restTemplate.getForObject(url, String.class);
+                return ResponseEntity.ok(new ApiResponse<String>(true,response,null));
+            } catch (RestClientException e) {
+                return ResponseEntity.badRequest().build();
+            }
         }
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/get-gps-data")
     public ResponseEntity<?> getGpsData()
     {
-        String url = hardwareIp + "/sendGps";
+        String url = "hardwareIp" + "/sendGps";
         try
         {
             String response = restTemplate.getForObject(url,String.class);

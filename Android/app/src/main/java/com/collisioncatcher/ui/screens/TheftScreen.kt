@@ -1,5 +1,7 @@
 package com.collisioncatcher.ui.screens
 
+import android.content.Context
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,16 +43,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.collisioncatcher.retrofit.entity.User
+import com.collisioncatcher.viewmodel.HardwareViewModel
+import com.collisioncatcher.viewmodel.UserViewModel
 
 @Composable
-@Preview(showSystemUi=true)
-fun TheftScreen() {
-    var isArmed by remember { mutableStateOf(true) }
+fun TheftScreen(hardwareViewModel: HardwareViewModel = viewModel(),userViewModel: UserViewModel = viewModel(),context : Context) {
+    val user = remember { mutableStateOf<User?>(null) }
+    val isArmed by hardwareViewModel.isVehicleArmed.collectAsState()
     var lastArmedTime by remember { mutableStateOf("2 hours ago") }
-    var batteryLevel by remember { mutableStateOf(85) }
+    var batteryLevel by remember { mutableIntStateOf(85) }
     var signalStrength by remember { mutableStateOf("Strong") }
-    var alertsCount by remember { mutableStateOf(2) }
+
+    LaunchedEffect(Unit) {
+        userViewModel.getUserDetails(context).let {
+            user.value = it
+        }
+    }
     
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -127,13 +142,6 @@ fun TheftScreen() {
         item {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SecurityMetricCard(
-                    title = "Alerts",
-                    value = "$alertsCount",
-                    icon = Icons.Default.Notifications,
-                    color = if (alertsCount > 0) Color(0xFFD32F2F) else Color(0xFF4CAF50),
-                    modifier = Modifier.weight(1f)
-                )
-                SecurityMetricCard(
                     title = "Status",
                     value = if (isArmed) "ACTIVE" else "INACTIVE",
                     icon = Icons.Default.Security,
@@ -174,29 +182,36 @@ fun TheftScreen() {
                         }
                         Switch(
                             checked = isArmed,
-                            onCheckedChange = { isArmed = it }
+                            onCheckedChange = {
+                                user.value?.hardware?.hardwareId.let {
+                                    if(!isArmed)
+                                        hardwareViewModel.disableMotor(it!!)
+                                    else
+                                        hardwareViewModel.enableMotor(it!!)
+                                }
+                            }
                         )
                     }
                 }
             }
         }
         
-        item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(
-                    onClick = { },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Panic Button")
-                }
-                Button(
-                    onClick = { },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Silent Alert")
-                }
-            }
-        }
+//        item {
+//            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+//                Button(
+//                    onClick = { },
+//                    modifier = Modifier.weight(1f)
+//                ) {
+//                    Text("Panic Button")
+//                }
+//                Button(
+//                    onClick = { },
+//                    modifier = Modifier.weight(1f)
+//                ) {
+//                    Text("Silent Alert")
+//                }
+//            }
+//        }
         
 //        item {
 //            // Recent Alerts
@@ -234,38 +249,38 @@ fun TheftScreen() {
 //            }
 //        }
         
-        item {
-            // Security Features
-            Text(
-                text = "Security Features",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-        
-        item {
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    SecurityFeatureItem(
-                        title = "Motion Detection",
-                        description = "Detects unauthorized vehicle movement",
-                        isEnabled = true
-                    )
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    SecurityFeatureItem(
-                        title = "GPS Tracking",
-                        description = "Real-time location monitoring",
-                        isEnabled = true
-                    )
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    SecurityFeatureItem(
-                        title = "Remote Lock",
-                        description = "Remotely lock/unlock vehicle",
-                        isEnabled = false
-                    )
-                }
-            }
-        }
+//        item {
+//            // Security Features
+//            Text(
+//                text = "Security Features",
+//                style = MaterialTheme.typography.titleMedium,
+//                fontWeight = FontWeight.SemiBold
+//            )
+//        }
+//
+//        item {
+//            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+//                Column(modifier = Modifier.padding(16.dp)) {
+//                    SecurityFeatureItem(
+//                        title = "Motion Detection",
+//                        description = "Detects unauthorized vehicle movement",
+//                        isEnabled = true
+//                    )
+//                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+//                    SecurityFeatureItem(
+//                        title = "GPS Tracking",
+//                        description = "Real-time location monitoring",
+//                        isEnabled = true
+//                    )
+//                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+//                    SecurityFeatureItem(
+//                        title = "Remote Lock",
+//                        description = "Remotely lock/unlock vehicle",
+//                        isEnabled = false
+//                    )
+//                }
+//            }
+//        }
     }
 }
 

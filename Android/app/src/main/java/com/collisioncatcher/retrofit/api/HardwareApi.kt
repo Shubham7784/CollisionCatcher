@@ -20,11 +20,11 @@ interface HardwareApi {
     @PUT("/hardware")
     suspend fun updateHardware(@Body hardware: Hardware):Response<Hardware>
 
-    @GET("/hardware/disable-motor")
-    suspend fun disableMotor():Response<String>
+    @GET("/hardware/{hardwareId}/disable-motor")
+    suspend fun disableMotor(@Path("hardwareId") hardwareId:String):Response<ApiResponse<String>>
 
-    @GET("/hardware/enable-motor")
-    suspend fun enableMotor():Response<String>
+    @GET("/hardware/{hardwareId}/enable-motor")
+    suspend fun enableMotor(@Path("hardwareId") hardwareid:String):Response<ApiResponse<String>>
 
     @GET("/hardware/get-gps-data")
     suspend fun getGpsData():Response<MapData>

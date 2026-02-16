@@ -61,7 +61,13 @@ data class TabItem(val title: String, val icon: ImageVector)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScaffold(onLogout: () -> Unit, onOpenContacts: () -> Unit, onOpenTips: () -> Unit,context: Context) {
+fun HomeScaffold(
+    onLogout: () -> Unit,
+    onOpenContacts: () -> Unit,
+    onOpenTips: () -> Unit,
+    userViewModel: UserViewModel = viewModel(),
+    context: Context
+) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf(
         TabItem("Home", Icons.Default.Home),
@@ -71,16 +77,16 @@ fun HomeScaffold(onLogout: () -> Unit, onOpenContacts: () -> Unit, onOpenTips: (
         TabItem("Profile", Icons.Default.Person)
     )
     Scaffold(
-        topBar = { 
+        topBar = {
             TopAppBar(
-                title = { Text("Collision Catcher") }, 
-                actions = { 
+                title = { Text("Collision Catcher") },
+                actions = {
                     Button(onClick = {
                         UserViewModel().logout(context)
                         onLogout()
                     }) { Text("Logout") }
                 }
-            ) 
+            )
         },
         bottomBar = {
             NavigationBar {
@@ -95,25 +101,31 @@ fun HomeScaffold(onLogout: () -> Unit, onOpenContacts: () -> Unit, onOpenTips: (
             }
         }
     ) { inner ->
-        Column(modifier = Modifier.padding(inner).padding(16.dp)) {
+        Column(modifier = Modifier
+            .padding(inner)
+            .padding(16.dp)) {
             when (selectedTab) {
                 0 -> HomeDashboard(onOpenContacts = onOpenContacts, onOpenTips = onOpenTips)
                 1 -> SpeedScreen(context = context)
                 2 -> LocationScreen()
-                3 -> TheftScreen()
-                else -> ProfileScreen(context = context)
+                3 -> TheftScreen(userViewModel = userViewModel, context = context)
+                else -> ProfileScreen(viewModel = userViewModel, context = context)
             }
         }
     }
 }
 
 @Composable
-fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit,hardwareViewModel: HardwareViewModel = viewModel()) {
+fun HomeDashboard(
+    onOpenContacts: () -> Unit,
+    onOpenTips: () -> Unit,
+    hardwareViewModel: HardwareViewModel = viewModel()
+) {
     val currentSpeed by hardwareViewModel.speed.collectAsState()
     var isMonitoring by remember { mutableStateOf(true) }
     var collisionRisk by remember { mutableStateOf("LOW") }
     var lastUpdate by remember { mutableStateOf("2 min ago") }
-    
+
     // Simulate real-time data updates
     LaunchedEffect(Unit) {
         while (true) {
@@ -126,7 +138,7 @@ fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit,hardwareVie
             lastUpdate = "Just now"
         }
     }
-    
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -204,10 +216,13 @@ fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit,hardwareVie
 
         item {
             // Real-time Metrics Grid
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 ModernMetricCard(
                     title = "Current Speed",
-                    value = "${currentSpeed.toString().substring(0,3)} km/h",
+                    value = "${currentSpeed.toString().substring(0, 3)} km/h",
                     icon = Icons.Default.Speed,
                     color = Color(0xFF1E3A8A),
                     modifier = Modifier.weight(1f)
@@ -223,7 +238,10 @@ fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit,hardwareVie
         }
 
         item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 ModernMetricCard(
                     title = "Location",
                     value = "TRACKING",
@@ -251,7 +269,10 @@ fun HomeDashboard(onOpenContacts: () -> Unit, onOpenTips: () -> Unit,hardwareVie
         }
 
         item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 ActionButton(
                     text = "Emergency\nContacts",
                     icon = Icons.Default.Phone,

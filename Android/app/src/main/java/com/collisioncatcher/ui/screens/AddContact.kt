@@ -19,7 +19,7 @@ import com.collisioncatcher.retrofit.entity.Member
 import com.collisioncatcher.viewmodel.UserViewModel
 
 @Composable
-fun AddContact(onSuccess: ()->Unit,context: Context,viewModel: UserViewModel= viewModel()) {
+fun AddContact(onSuccess: ()->Unit,context: Context,viewModel: UserViewModel = viewModel()) {
     var name by remember { mutableStateOf(TextFieldValue("")) }
     var phone by remember { mutableStateOf(TextFieldValue("")) }
     var relation by remember { mutableStateOf(TextFieldValue("")) }

@@ -1,5 +1,6 @@
 package com.asus.Collision.Catcher.Controller;
 
+import com.asus.Collision.Catcher.Entity.ApiResponse;
 import com.asus.Collision.Catcher.Entity.User;
 import com.asus.Collision.Catcher.Service.HardwareService;
 import com.asus.Collision.Catcher.Service.UserDetailsServiceImpl;
@@ -54,7 +55,8 @@ public class PublicController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUserName());
             if(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER"))) {
                 String jwtToken = jwtUtils.generateToken(userDetails.getUsername());
-                return new ResponseEntity<>(jwtToken, HttpStatus.OK);
+                User byName = userService.findByName(userDetails.getUsername());
+                return ResponseEntity.ok(new ApiResponse<User>(true,jwtToken,byName));
             }
             else {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

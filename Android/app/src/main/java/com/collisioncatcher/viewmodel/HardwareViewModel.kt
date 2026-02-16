@@ -32,6 +32,7 @@ class HardwareViewModel : ViewModel() {
         RetrofitService().getPlaneRetrofit().create<HardwareApi>(HardwareApi::class.java)
     val isSpeedFetching = mutableStateOf(false)
 
+    val isVehicleArmed = MutableStateFlow(false)
     fun startSpeedFetching(hardwareId: String) {
         viewModelScope.launch {
             isLoading.value = true
@@ -125,6 +126,69 @@ class HardwareViewModel : ViewModel() {
                 delay(1000)
             }
             Log.e("Speed Fetching",message.value)
+        }
+    }
+
+    fun enableMotor(hardwareId:String){
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                val response = retrofit.enableMotor(hardwareId)
+                if(response.isSuccessful && response.code()==200)
+                {
+                    isSuccess.value = true
+                    message.value = response.body()?.message!!
+                    isVehicleArmed.value = false
+                }
+                else
+                {
+                    isFailure.value = true
+                    message.value = response.body()?.message!!
+                }
+            }
+            catch (e: IOException) {
+                message.value = "Network Error"
+                isFailure.value = true
+            }
+            catch (e: HttpException) {
+                message.value = "Server Error"
+                isFailure.value = true
+            }
+            finally {
+                isLoading.value = false
+            }
+        }
+    }
+
+
+    fun disableMotor(hardwareId:String){
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                val response = retrofit.disableMotor(hardwareId)
+                if(response.isSuccessful && response.code()==200)
+                {
+                    isSuccess.value = true
+                    message.value = response.body()?.message!!
+                    isVehicleArmed.value = true
+                }
+                else
+                {
+                    isFailure.value = true
+                    message.value = response.body()?.message!!
+                }
+            }
+            catch (e: IOException) {
+                message.value = "Network Error"
+                isFailure.value = true
+            }
+            catch (e: HttpException) {
+                message.value = "Server Error"
+                isFailure.value = true
+            }
+            finally {
+                isLoading.value = false
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.collisioncatcher.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,6 +16,7 @@ import com.collisioncatcher.ui.screens.ProfileScreen
 import com.collisioncatcher.ui.screens.RegisterScreen
 import com.collisioncatcher.ui.screens.SafetyTipsScreen
 import com.collisioncatcher.ui.screens.SplashScreen
+import com.collisioncatcher.viewmodel.UserViewModel
 
 object Routes {
     const val SplashScreen = "splash"
@@ -110,7 +112,7 @@ fun AppNavHost(navController: NavHostController) {
             ProfileScreen(context = LocalContext.current)
         }
         composable(Routes.AddContact) {
-            AddContact(onSuccess = { navController.popBackStack() }, context = LocalContext.current)
+            AddContact(onSuccess = { navController.popBackStack() },context = LocalContext.current)
         }
     }
 }

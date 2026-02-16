@@ -22,9 +22,8 @@ public class HardwareService {
         return hardwareRepository.save(hardware);
     }
 
-    /*public Hardware getHardwareById(String hardwareId)
+    public Optional<Hardware> getHardwareById(String hardwareId)
     {
-        Hardware byId = hardwareRepository.findById();
-        return byId;
-    }*/
+        return hardwareRepository.findById(hardwareId);
+    }
 }

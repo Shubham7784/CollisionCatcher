@@ -21,7 +21,8 @@ public class UserController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         if(username!=null)
         {
-            return new ResponseEntity<>(username,HttpStatus.OK);
+            User byName = userService.findByName(username);
+            return new ResponseEntity<>(byName,HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

@@ -17,5 +17,6 @@ public class Hardware {
     @Id
     private String hardwareId;
 
+    private String hardwareIp;
     private String userName;
 }
