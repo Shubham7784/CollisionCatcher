@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Component
 public class AlertService {
@@ -24,6 +25,16 @@ public class AlertService {
     {
         alertRepository.delete(alert);
         return true;
+    }
+
+    public boolean deleteAlertByUserName(String userName){
+        List<Alert> alerts = getAlerts();
+        List<Alert> alertStream = alerts.stream().filter(x -> x.getUserName().equals(userName)).toList();
+        boolean res = false;
+        if(!alertStream.isEmpty()){
+           res = deleteAlert(alertStream.getFirst());
+        }
+        return res;
     }
 
     public List<Alert> getAlerts()
