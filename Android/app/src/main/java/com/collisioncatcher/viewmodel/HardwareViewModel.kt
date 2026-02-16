@@ -248,4 +248,31 @@ class HardwareViewModel : ViewModel() {
         context.startActivity(intent)
     }
 
+
+    fun generateMapsLink(lat: Double, lon: Double): String {
+        return "https://www.google.com/maps/search/?api=1&query=$lat,$lon"
+    }
+
+
+    fun shareLocation(
+        context: Context,
+        lat: Double,
+        lon: Double
+    ) {
+        val link = generateMapsLink(lat, lon)
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(
+                Intent.EXTRA_TEXT,
+                "Live Hardware Location:\n$link"
+            )
+        }
+
+        context.startActivity(
+            Intent.createChooser(shareIntent, "Share Location via")
+        )
+    }
+
+
 }

@@ -125,7 +125,12 @@ public class HardwareController {
             String url = hardwareById.get().getHardwareIp() + "/sendGps";
             //latitude = 25.442008
             //longitude = 81.817825
-            try {
+            MapData map = new MapData();
+            map.setHardwareId("ESP-7784");
+            map.setLatitude(25.442008);
+            map.setLongitude(81.817825);
+            return new ResponseEntity<>(map, HttpStatus.OK);
+            /*try {
                 String response = restTemplate.getForObject(url, String.class);
                 ObjectMapper mapper = new ObjectMapper();
                 MapData mapData = mapper.readValue(response, MapData.class);
@@ -136,7 +141,7 @@ public class HardwareController {
                 throw new RuntimeException(e);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
-            }
+            }*/
         }
         return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
     }

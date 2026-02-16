@@ -1,6 +1,7 @@
 package com.collisioncatcher.ui.screens
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,7 +50,11 @@ import com.collisioncatcher.viewmodel.HardwareViewModel
 import com.collisioncatcher.viewmodel.UserViewModel
 
 @Composable
-fun LocationScreen(context: Context, hardwareViewModel: HardwareViewModel = viewModel(),userViewModel: UserViewModel = viewModel()) {
+fun LocationScreen(
+    context: Context,
+    hardwareViewModel: HardwareViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
+) {
     var currentLocation by remember { mutableStateOf("") }
     val isTracking by hardwareViewModel.isLocationTracking.collectAsState()
     val locationData by hardwareViewModel.locationData.collectAsState()
@@ -78,7 +83,7 @@ fun LocationScreen(context: Context, hardwareViewModel: HardwareViewModel = view
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        
+
         item {
             // Location Status Card
             ElevatedCard(
@@ -123,19 +128,19 @@ fun LocationScreen(context: Context, hardwareViewModel: HardwareViewModel = view
                 fontWeight = FontWeight.SemiBold
             )
         }
-        
+
         item {
             OutlinedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     LocationDetailItem(
                         label = "Current Address",
-                        value ="",
+                        value = "",
                         icon = Icons.Default.LocationOn
                     )
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
                     LocationDetailItem(
                         label = "Coordinates",
-                        value = locationData?.latitude.toString()+" "+locationData?.longitude.toString(),
+                        value = locationData?.latitude.toString() + " " + locationData?.longitude.toString(),
                         icon = Icons.Default.Settings
                     )
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
@@ -147,19 +152,21 @@ fun LocationScreen(context: Context, hardwareViewModel: HardwareViewModel = view
                 }
             }
         }
-        
+
         item {
             // Tracking Controls
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 Button(
                     onClick = {
-                        if(!isTracking){
+                        if (!isTracking) {
                             user.value?.hardware?.hardwareId.let {
                                 hardwareViewModel.getLocation(context, it!!)
                             }
-                        }
-                        else{
-                            user.value?.hardware?.hardwareId.let{
+                        } else {
+                            user.value?.hardware?.hardwareId.let {
                                 hardwareViewModel.stopLocationFetching(it!!)
                             }
                         }
@@ -169,7 +176,17 @@ fun LocationScreen(context: Context, hardwareViewModel: HardwareViewModel = view
                     Text(if (isTracking) "Stop Tracking" else "Start Tracking")
                 }
                 Button(
-                    onClick = { },
+                    onClick = {
+                        if (locationData != null)
+                            hardwareViewModel.shareLocation(
+                                context,
+                                locationData?.latitude!!,
+                                locationData?.longitude!!
+                            )
+                        else
+                            Toast.makeText(context, "Firstly Start Tracking", Toast.LENGTH_SHORT)
+                                .show()
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Share Location")
