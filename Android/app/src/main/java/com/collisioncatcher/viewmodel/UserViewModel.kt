@@ -1,6 +1,7 @@
 package com.collisioncatcher.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,11 +12,14 @@ import kotlinx.coroutines.launch
 import okio.IOException
 import retrofit2.HttpException
 import androidx.core.content.edit
+import com.collisioncatcher.firebase.TokenManager
 import com.collisioncatcher.retrofit.api.SignUpApi
 import com.collisioncatcher.retrofit.entity.Alert
 import com.collisioncatcher.retrofit.entity.Member
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import retrofit2.create
 
 class UserViewModel : ViewModel() {
     val isLoading = mutableStateOf(false)
@@ -249,5 +253,121 @@ class UserViewModel : ViewModel() {
     fun logout(context: Context) {
         val sharedPref = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         sharedPref.edit { remove("auth_token") }
+    }
+
+
+    fun saveFcmToken(context: Context){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.e("FCM", "Fetching token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+            Log.d("FCM_TOKEN", token)
+            isLoading.value = true
+            viewModelScope.launch{
+                try {
+                    val bToken = getToken(context).toString()
+                    val retrofit = RetrofitService().getAuthRetrofit(bToken).create<UserApi>(UserApi::class.java)
+                    val response = retrofit.saveFcmToken(token)
+                    if(response.isSuccessful && response.code()==200)
+                    {
+                        isSuccess.value = true
+                        message.value = "FCM Token Saved"
+                    }
+                    else
+                    {
+                        isFailure.value = true
+                        message.value = "Some Error Has Occurred"
+                        Log.e("User View Model",response.message())
+                    }
+                }
+                catch (e: IOException)
+                {
+                    message.value = "Network Error"
+                    isFailure.value = true
+                }
+                catch (e: HttpException)
+                {
+                    message.value = "Server Error"
+                    isFailure.value = true
+                }
+                finally {
+                    isLoading.value = false
+                }
+            }
+        }
+    }
+
+    fun cancelAlert(context:Context){
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                val retrofit = RetrofitService().getAuthRetrofit(getToken(context).toString()).create<UserApi>(UserApi::class.java)
+                val response = retrofit.cancelAlert()
+                if(response.isSuccessful && response.code()==204)
+                {
+                    isSuccess.value = true
+                    message.value = "Alert Cancelled"
+                }
+                else
+                {
+                    isFailure.value = true
+                    message.value = "Some Error Has Occurred"
+                    Log.e("UserViewModel",response.message())
+                }
+            }
+            catch (e:IOException) {
+                message.value = "Network Error"
+                isFailure.value = true
+            }
+            catch (e:HttpException)
+            {
+                message.value = "Server Error"
+                isFailure.value = true
+            }
+            finally {
+                isLoading.value = false
+            }
+        }
+    }
+
+    fun sendEmergencyAlert(context: Context) {
+        var isAlerted = false
+        viewModelScope.launch {
+            isLoading.value = true
+            val retrofit = RetrofitService().getAuthRetrofit(getToken(context).toString()).create<UserApi>(UserApi::class.java)
+            while(!isAlerted)
+            {
+                try {
+                    val response = retrofit.sendEmergencyAlert()
+                    if(response.isSuccessful && response.code() == 200)
+                    {
+                        isSuccess.value = true
+                        message.value = "Alert Sent"
+                        Log.e("UserViewModel",message.value)
+                        isAlerted = true
+                    }
+                    else
+                    {
+                        isFailure.value = true
+                        message.value = "Some Error Has Occurred"
+                        Log.e("UserViewModel",response.message())
+                    }
+                }
+                catch (e:IOException) {
+                    message.value = "Network Error"
+                    isFailure.value = true
+                }
+                catch (e:HttpException){
+                    message.value = "Server Error"
+                    isFailure.value = true
+                }
+                finally {
+                    isLoading.value = false
+                }
+            }
+        }
     }
 }

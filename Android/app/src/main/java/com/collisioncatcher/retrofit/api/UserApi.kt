@@ -6,10 +6,12 @@ import com.collisioncatcher.retrofit.entity.Member
 import com.collisioncatcher.retrofit.entity.User
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface UserApi {
 
@@ -33,5 +35,14 @@ interface UserApi {
 
     @GET("/alerts/{userName}")
     suspend fun getAlerts(@Path("userName") userName:String):Response<List<Alert>>
+
+    @POST("/user/save-token")
+    suspend fun saveFcmToken(@Query("token") token:String):Response<ApiResponse<String>>
+
+    @DELETE("/user/cancel-alert")
+    suspend fun cancelAlert():Response<ApiResponse<String>>
+
+    @GET("/user/send-emergency-alert")
+    suspend fun sendEmergencyAlert(): Response<ApiResponse<String>>
 
 }

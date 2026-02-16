@@ -26,8 +26,8 @@ interface HardwareApi {
     @GET("/hardware/{hardwareId}/enable-motor")
     suspend fun enableMotor(@Path("hardwareId") hardwareid:String):Response<ApiResponse<String>>
 
-    @GET("/hardware/get-gps-data")
-    suspend fun getGpsData():Response<MapData>
+    @GET("/hardware/{hardwareId}/get-gps-data")
+    suspend fun getGpsData(@Path("hardwareId") hardwareId:String):Response<MapData>
 
     @GET("/hardware/{hardwareId}/stream/start")
     suspend fun startSpeedStream(@Path("hardwareId") hardwareId: String): Response<ApiResponse<String>>

@@ -4,6 +4,8 @@ agp = "8.12.3"
 bsonKotlinx = "5.6.1"
 converterGson = "3.0.0"
 converterScalars = "3.0.0"
+firebaseBom = "34.9.0"
+googleServices = "4.4.4"
 gson = "2.13.2"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
@@ -16,8 +18,10 @@ activityCompose = "1.11.0"
 composeBom = "2025.10.01"
 foundationLayoutAndroid = "1.9.4"
 mapsCompose = "6.12.1"
+mapsComposeVersion = "2.11.4"
 navigationCompose = "2.9.5"
 playServicesMaps = "19.2.0"
+playServicesMapsVersion = "18.2.0"
 retrofit = "3.0.0"
 retrofitVersion = "2.9.0"
 
@@ -30,6 +34,9 @@ bson = { module = "org.mongodb:bson" }
 bson-kotlinx = { module = "org.mongodb:bson-kotlinx", version.ref = "bsonKotlinx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -47,7 +54,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+maps-compose-v2114 = { module = "com.google.maps.android:maps-compose", version.ref = "mapsComposeVersion" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+play-services-maps-v1820 = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMapsVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-v290 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
 

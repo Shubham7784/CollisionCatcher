@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -10,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.collisioncatcher"
-        minSdk = 26
+        minSdk = 27
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -56,8 +57,6 @@ dependencies {
     // Accompanist (permissions)
     implementation(libs.accompanist.permissions)
     // Maps Compose (stub for later wiring)
-    implementation(libs.maps.compose)
-    implementation(libs.play.services.maps)
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
     testImplementation(libs.junit)
@@ -73,5 +72,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.bson)
     implementation(libs.bson.kotlinx)
-    implementation(libs.converter.scalars)
+    implementation(libs.maps.compose.v2114)
+    implementation(libs.play.services.maps.v1820)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+
 }

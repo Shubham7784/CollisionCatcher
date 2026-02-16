@@ -1,6 +1,8 @@
 package com.asus.Collision.Catcher.Controller;
 
+import com.asus.Collision.Catcher.Entity.ApiResponse;
 import com.asus.Collision.Catcher.Entity.User;
+import com.asus.Collision.Catcher.Service.AlertService;
 import com.asus.Collision.Catcher.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AlertService alertService;
 
     @GetMapping("/check-login")
     public ResponseEntity<?> checkLogin()
@@ -75,6 +80,39 @@ public class UserController {
         if(user1!=null)
             return new ResponseEntity<>(userDb,HttpStatus.ACCEPTED);
         return new ResponseEntity<>(HttpStatus.ALREADY_REPORTED);
+    }
+
+
+    @PostMapping("/save-token")
+    public ResponseEntity<?> saveFcmToken(
+            @RequestParam String token) {
+
+        String userName =
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName();
+
+        User user = userService.findByName(userName);
+        user.setFcmToken(token);
+        userService.saveUser(user);
+
+        return ResponseEntity.ok(new ApiResponse<String>(true,"FCM Token Saved",null));
+    }
+
+    @DeleteMapping("/cancel-alert")
+    public ResponseEntity<?> cancelAlert() {
+        String userName = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        boolean deleted = alertService.deleteAlertByUserName(userName);
+        if(deleted)
+            return ResponseEntity.noContent().build();
+        return ResponseEntity.notFound().build();
+    }
+
+
+    @GetMapping("/send-emergency-alert")
+    public ResponseEntity<?> sendEmergencyAlert(){
+        return ResponseEntity.ok(new ApiResponse<String>(true,"Emergency Alert Generated",null));
     }
 }
 

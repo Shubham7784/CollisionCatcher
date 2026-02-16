@@ -34,6 +34,8 @@ public class User {
     @NonNull
     private Hardware hardware;
 
+    private String fcmToken;
+
     @DBRef
     private ArrayList<Member> members = new ArrayList<>();
 }

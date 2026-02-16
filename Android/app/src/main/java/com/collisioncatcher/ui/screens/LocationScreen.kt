@@ -1,5 +1,6 @@
 package com.collisioncatcher.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,15 +41,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.collisioncatcher.retrofit.entity.User
+import com.collisioncatcher.viewmodel.HardwareViewModel
+import com.collisioncatcher.viewmodel.UserViewModel
 
 @Composable
-fun LocationScreen() {
-    var currentLocation by remember { mutableStateOf("123 Main St, City") }
-    var isTracking by remember { mutableStateOf(true) }
+fun LocationScreen(context: Context, hardwareViewModel: HardwareViewModel = viewModel(),userViewModel: UserViewModel = viewModel()) {
+    var currentLocation by remember { mutableStateOf("") }
+    val isTracking by hardwareViewModel.isLocationTracking.collectAsState()
+    val locationData by hardwareViewModel.locationData.collectAsState()
     var lastUpdate by remember { mutableStateOf("2 minutes ago") }
-    var batteryLevel by remember { mutableStateOf(85) }
-    
+    val user = remember { mutableStateOf<User?>(null) }
+
+    LaunchedEffect(Unit) {
+        userViewModel.getUserDetails(context).let {
+            user.value = it
+        }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -73,7 +88,9 @@ fun LocationScreen() {
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -98,46 +115,6 @@ fun LocationScreen() {
                 }
             }
         }
-        
-        item {
-            // Map Placeholder
-            ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            color = Color(0xFFE3F2FD),
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = Color(0xFF1976D2)
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = "Interactive Map",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "Tap to view full map",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-        
         item {
             // Location Details
             Text(
@@ -152,19 +129,19 @@ fun LocationScreen() {
                 Column(modifier = Modifier.padding(16.dp)) {
                     LocationDetailItem(
                         label = "Current Address",
-                        value = currentLocation,
+                        value ="",
                         icon = Icons.Default.LocationOn
                     )
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
                     LocationDetailItem(
                         label = "Coordinates",
-                        value = "40.7128° N, 74.0060° W",
+                        value = locationData?.latitude.toString()+" "+locationData?.longitude.toString(),
                         icon = Icons.Default.Settings
                     )
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
                     LocationDetailItem(
                         label = "Accuracy",
-                        value = "±3 meters",
+                        value = "",
                         icon = Icons.Default.CheckCircle
                     )
                 }
@@ -175,7 +152,18 @@ fun LocationScreen() {
             // Tracking Controls
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
-                    onClick = { isTracking = !isTracking },
+                    onClick = {
+                        if(!isTracking){
+                            user.value?.hardware?.hardwareId.let {
+                                hardwareViewModel.getLocation(context, it!!)
+                            }
+                        }
+                        else{
+                            user.value?.hardware?.hardwareId.let{
+                                hardwareViewModel.stopLocationFetching(it!!)
+                            }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(if (isTracking) "Stop Tracking" else "Start Tracking")
@@ -185,42 +173,6 @@ fun LocationScreen() {
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Share Location")
-                }
-            }
-        }
-        
-        item {
-            // Route History
-            Text(
-                text = "Recent Routes",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-        
-        item {
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    RouteHistoryItem(
-                        route = "Home → Office",
-                        distance = "12.5 km",
-                        duration = "25 min",
-                        time = "Today, 8:30 AM"
-                    )
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    RouteHistoryItem(
-                        route = "Office → Mall",
-                        distance = "8.2 km",
-                        duration = "18 min",
-                        time = "Yesterday, 6:15 PM"
-                    )
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    RouteHistoryItem(
-                        route = "Mall → Home",
-                        distance = "15.8 km",
-                        duration = "32 min",
-                        time = "Yesterday, 8:45 PM"
-                    )
                 }
             }
         }
@@ -256,43 +208,5 @@ private fun LocationDetailItem(
                 fontWeight = FontWeight.SemiBold
             )
         }
-    }
-}
-
-@Composable
-private fun RouteHistoryItem(
-    route: String,
-    distance: String,
-    duration: String,
-    time: String
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.DirectionsCar,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = Color(0xFF1976D2)
-        )
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = route,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "$distance • $duration",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Text(
-            text = time,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

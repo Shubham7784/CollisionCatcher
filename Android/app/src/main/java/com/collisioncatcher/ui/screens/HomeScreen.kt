@@ -76,6 +76,10 @@ fun HomeScaffold(
         TabItem("Theft", Icons.Default.Security),
         TabItem("Profile", Icons.Default.Person)
     )
+
+    LaunchedEffect(Unit) {
+        userViewModel.saveFcmToken(context)
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -107,7 +111,7 @@ fun HomeScaffold(
             when (selectedTab) {
                 0 -> HomeDashboard(onOpenContacts = onOpenContacts, onOpenTips = onOpenTips)
                 1 -> SpeedScreen(context = context)
-                2 -> LocationScreen()
+                2 -> LocationScreen(context = context)
                 3 -> TheftScreen(userViewModel = userViewModel, context = context)
                 else -> ProfileScreen(viewModel = userViewModel, context = context)
             }

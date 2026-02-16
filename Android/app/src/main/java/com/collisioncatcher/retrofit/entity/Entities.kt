@@ -25,7 +25,7 @@ data class Member(
     val relation: String?
 )
 
-data class MapData(val latitude: Double, val longitude: Double)
+data class MapData(val hardwareId: String, val latitude: Double, val longitude: Double)
 
 data class Alert(
     val alertId : ObjectId?,

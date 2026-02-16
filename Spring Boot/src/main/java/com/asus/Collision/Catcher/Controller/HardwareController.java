@@ -17,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/hardware")
@@ -40,6 +42,9 @@ public class HardwareController {
     @Autowired
     private SpeedRepository repo;
 
+    @Autowired
+    private FCMService fcmService;
+
     private RestTemplate restTemplate = new RestTemplate();
 
     @PostMapping
@@ -58,10 +63,12 @@ public class HardwareController {
     public ResponseEntity<?> alertGenerated(@RequestBody Alert body) {
         String hardwareId = body.getHardwareId();
         try {
-            List<User> listUser = userService.getAllUsers().stream().filter(x -> x.getHardware().getHardwareId().equals(hardwareId)).toList();
-            if(!listUser.isEmpty()) {
+            List<User> listUser = userService.getAllUsers().stream().filter(x->x.getHardware().getHardwareId().equals(hardwareId)).toList();
+            if(listUser.getFirst()!=null) {
                 body.setUserName(listUser.getFirst().getUserName());
                 alertService.saveAlert(body);
+                if(listUser.getFirst().getFcmToken() != null)
+                    fcmService.sendAccidentAlert(listUser.getFirst().getFcmToken());
                 return new ResponseEntity<>("ALERT SAVED", HttpStatus.OK);
             }
             else{
@@ -110,23 +117,28 @@ public class HardwareController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/get-gps-data")
-    public ResponseEntity<?> getGpsData()
+    @GetMapping("/{hardwareId}/get-gps-data")
+    public ResponseEntity<?> getGpsData(@PathVariable String hardwareId)
     {
-        String url = "hardwareIp" + "/sendGps";
-        try
-        {
-            String response = restTemplate.getForObject(url,String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            MapData mapData = mapper.readValue(response, MapData.class);
-                return new ResponseEntity<>(mapData,HttpStatus.OK);
-        } catch (RestClientException e) {
-            return new ResponseEntity<>("Error Connecting to ESP32"+e.getMessage(),HttpStatus.BAD_REQUEST);
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        Optional<Hardware> hardwareById = hardwareService.getHardwareById(hardwareId);
+        if(hardwareById.isPresent()) {
+            String url = hardwareById.get().getHardwareIp() + "/sendGps";
+            //latitude = 25.442008
+            //longitude = 81.817825
+            try {
+                String response = restTemplate.getForObject(url, String.class);
+                ObjectMapper mapper = new ObjectMapper();
+                MapData mapData = mapper.readValue(response, MapData.class);
+                return new ResponseEntity<>(mapData, HttpStatus.OK);
+            } catch (RestClientException e) {
+                return new ResponseEntity<>("Error Connecting to ESP32" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            } catch (JsonMappingException e) {
+                throw new RuntimeException(e);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
+        return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/get-speed-data")

@@ -1,5 +1,7 @@
 package com.collisioncatcher
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,5 +23,12 @@ class MainActivity : ComponentActivity() {
                 AppNavHost(navController = navController)
             }
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                1001
+            )
+        }
+
     }
 }
